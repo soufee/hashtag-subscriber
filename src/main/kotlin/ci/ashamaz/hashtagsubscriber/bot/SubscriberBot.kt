@@ -2,12 +2,14 @@ package ci.ashamaz.hashtagsubscriber.bot
 
 import ci.ashamaz.hashtagsubscriber.model.HashTag
 import ci.ashamaz.hashtagsubscriber.service.ContactUserService
+import ci.ashamaz.hashtagsubscriber.service.HashTagService
 import ci.ashamaz.hashtagsubscriber.util.UserConverter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.PropertySource
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
+import org.telegram.telegrambots.meta.api.methods.ForwardMessage
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
@@ -25,6 +27,9 @@ class SubscriberBot : TelegramLongPollingBot() {
 
     @Autowired
     private val service: ContactUserService? = null
+
+    @Autowired
+    private val tagservice: HashTagService? = null
 
     @Value("\${bot.name}")
     var botName: String? = null
@@ -51,32 +56,40 @@ class SubscriberBot : TelegramLongPollingBot() {
         val chatId = update?.message?.chatId
 
         var contact = userConverter?.convert(user)
-        contact?.subscriptions?.plus(HashTag(tag="qwerty"))
+
         if (contact != null) {
             if (chatId != null) {
-                val c = service?.getContactUserByChatId(chatId) != null
-                if (!c) service?.addContactUser(contact)
+                val c = service?.getContactUserByChatId(chatId)
+                if (c == null) service?.addContactUser(contact)
             }
+            sendMsg(chatId.toString(), "Ответ: " + message)
+        } else if (update?.hasChannelPost() == true) {
+            val post = update!!.channelPost
+            val sm = ForwardMessage()
+            sm.fromChatId = post.chatId.toString()
+            sm.messageId = post.messageId
+            sm.chatId = "87927916"
 
+            execute(sm)
         }
 
-        sendMsg(chatId.toString(), "Ответ: " + message)
+
     }
 
-//    @Synchronized
+    //    @Synchronized
     fun sendMsg(chatId: String?, s: String?) {
-      Runnable {
-          val message = SendMessage()
-          message.enableMarkdown(true)
-          message.chatId = chatId
-          message.text = s
-          try {
+        Runnable {
+            val message = SendMessage()
+            message.enableMarkdown(true)
+            message.chatId = chatId
+            message.text = s
+            try {
 
-              execute(message)
-          } catch (e: TelegramApiException) {
-              log.log(Level.SEVERE, "Exception: ", e.toString())
-          }
-      }.run()
+                execute(message)
+            } catch (e: TelegramApiException) {
+                log.log(Level.SEVERE, "Exception: ", e.toString())
+            }
+        }.run()
 
     }
 
