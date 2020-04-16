@@ -10,4 +10,5 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface HashTagRepository : JpaRepository<HashTag, Long> {
     fun getHashTagsBySubscribers(user: ContactUser): List<HashTag>
+    fun getByTag(tag: String): HashTag?
 }

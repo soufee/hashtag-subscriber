@@ -1,12 +1,12 @@
 package ci.ashamaz.hashtagsubscriber.util
 
-import ci.ashamaz.hashtagsubscriber.model.ContactUser
-import org.springframework.stereotype.Service
-import org.springframework.core.convert.converter.Converter;
 import org.telegram.telegrambots.meta.api.objects.User
+import ci.ashamaz.hashtagsubscriber.model.ContactUser
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.stereotype.Component
 
-@Service
-class UserConverter: Converter<User, ContactUser>{
+@Component
+class UserConverter: Converter<User?, ContactUser?>{
     override fun convert(tgmUser: User?): ContactUser? {
         if (tgmUser==null) return null
         return ContactUser(

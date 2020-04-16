@@ -1,5 +1,6 @@
 package ci.ashamaz.hashtagsubscriber.model
 
+import java.time.LocalDateTime
 import javax.persistence.*
 
 @Entity
@@ -21,7 +22,11 @@ data class ContactUser(
         @Column(name = "chat_id", nullable = false, unique = true)
         val chatId: Long = 0,
         @Column(name = "admin")
-        var admin: Boolean = false
+        var admin: Boolean = false,
+        @Column(name = "registration_date")
+        var registrationDate: LocalDateTime? = null
+
+
 ) {
         @ManyToMany(fetch = FetchType.EAGER)
         val subscriptions: Set<HashTag> = mutableSetOf()

@@ -1,35 +1,25 @@
 package ci.ashamaz.hashtagsubscriber.bot
 
-import ci.ashamaz.hashtagsubscriber.model.HashTag
-import ci.ashamaz.hashtagsubscriber.service.ContactUserService
-import ci.ashamaz.hashtagsubscriber.service.HashTagService
-import ci.ashamaz.hashtagsubscriber.util.UserConverter
+
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.PropertySource
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
-import org.telegram.telegrambots.meta.api.methods.ForwardMessage
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod
+import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException
-import java.util.logging.Level
-import java.util.logging.Logger
 import javax.annotation.PostConstruct
 
 @Component
 @PropertySource("classpath:bot.properties")
 class SubscriberBot : TelegramLongPollingBot() {
-    final val log = Logger.getLogger("SubscriberBot")
+    private val logger: Logger = LoggerFactory.getLogger(SubscriberBot::class.java)
 
     @Autowired
-    private val userConverter: UserConverter? = null
-
-    @Autowired
-    private val service: ContactUserService? = null
-
-    @Autowired
-    private val tagservice: HashTagService? = null
+    val processor: ProcessPost? = null
 
     @Value("\${bot.name}")
     var botName: String? = null
@@ -41,60 +31,31 @@ class SubscriberBot : TelegramLongPollingBot() {
 
     override fun getBotUsername(): String {
         return botName ?: ""
-
     }
 
     override fun getBotToken(): String {
         return token ?: ""
-
     }
 
     override fun onUpdateReceived(update: Update?) {
-        val message: String = update?.getMessage()?.getText().toString()
-        log.log(Level.INFO, message)
-        val user = update?.message?.from
-        val chatId = update?.message?.chatId
-
-        var contact = userConverter?.convert(user)
-
-        if (contact != null) {
-            if (chatId != null) {
-                val c = service?.getContactUserByChatId(chatId)
-                if (c == null) service?.addContactUser(contact)
+        Runnable {
+            if (update == null) return@Runnable
+            var method: BotApiMethod<*>? = null
+            if (update.hasChannelPost()) {
+                method = processor?.processChannelPost(update)
+            } else {
+                method = processor?.processPersonalPost(update)
             }
-            sendMsg(chatId.toString(), "Ответ: " + message)
-        } else if (update?.hasChannelPost() == true) {
-            val post = update!!.channelPost
-            val sm = ForwardMessage()
-            sm.fromChatId = post.chatId.toString()
-            sm.messageId = post.messageId
-            sm.chatId = "87927916"
-
-            execute(sm)
-        }
-
-
+            executor(method)
+        }.run()
     }
 
-    //    @Synchronized
-    fun sendMsg(chatId: String?, s: String?) {
-        Runnable {
-            val message = SendMessage()
-            message.enableMarkdown(true)
-            message.chatId = chatId
-            message.text = s
-            try {
-
-                execute(message)
-            } catch (e: TelegramApiException) {
-                log.log(Level.SEVERE, "Exception: ", e.toString())
-            }
-        }.run()
-
+    fun executor(method: BotApiMethod<Message>?) {
+        execute(method)
     }
 
     @PostConstruct
     fun connected() {
-        log.log(Level.INFO, "Бот запущен")
+        logger.info("Бот запущен")
     }
 }

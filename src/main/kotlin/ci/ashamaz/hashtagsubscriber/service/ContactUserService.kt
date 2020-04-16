@@ -6,5 +6,5 @@ interface ContactUserService {
     fun getCotactUserById(id: Long):ContactUser
     fun getCotactUserByUserName(name: String):ContactUser?
     fun getContactUserByChatId(id: Long): ContactUser?
-    fun addContactUser(user: ContactUser)
+    fun saveOrUpdateContactUser(user: ContactUser)
 }

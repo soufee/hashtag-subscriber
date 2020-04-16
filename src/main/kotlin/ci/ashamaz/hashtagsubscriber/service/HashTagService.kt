@@ -8,4 +8,6 @@ interface HashTagService {
     fun saveTag(tag: HashTag)
     fun getTag(id: Long): HashTag?
     fun getAll():List<HashTag>
+    fun getByTag(tag: String): HashTag?
+    fun subscribeTag(tag: String, user: ContactUser)
 }
