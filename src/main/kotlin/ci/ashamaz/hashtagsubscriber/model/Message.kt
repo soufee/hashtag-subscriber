@@ -17,18 +17,7 @@ data class Message(
         val channel: Channel? = null
 
 ) {
-    @ManyToMany(fetch = FetchType.EAGER, cascade = [CascadeType.ALL])
+    @ManyToMany(fetch = FetchType.EAGER, cascade = [CascadeType.MERGE, CascadeType.REFRESH, CascadeType.REFRESH, CascadeType.DETACH])
     var tags: Set<HashTag> = mutableSetOf()
 
-    fun getTagsFromText(): Set<HashTag> {
-        val result = mutableSetOf<HashTag>()
-        if (text.contains('#')) {
-            var words = text.split(" ")
-            for (s in words) {
-                if (s.startsWith('#'))  result.add(HashTag(tag = s.trim()))
-            }
-        }
-
-        return result
-    }
 }

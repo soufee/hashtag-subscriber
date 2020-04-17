@@ -6,7 +6,6 @@ import org.springframework.scheduling.annotation.EnableScheduling
 import org.telegram.telegrambots.ApiContextInitializer
 
 @SpringBootApplication
-@EnableScheduling
 class HashtagSubscriberApplication
 
 

@@ -1,5 +1,6 @@
 package ci.ashamaz.hashtagsubscriber.util
 
+import ci.ashamaz.hashtagsubscriber.util.converter.MessageConverter
 import com.google.gson.Gson
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -23,7 +24,7 @@ class MessageConverterTest: AbstractTransactionalJUnit4SpringContextTests() {
         """
     val message = gson.fromJson(text, Message::class.java)
 
-    val converter =  MessageConverter()
+    val converter = MessageConverter()
 
     @Test
     fun convert() {

@@ -1,4 +1,4 @@
-package ci.ashamaz.hashtagsubscriber.util
+package ci.ashamaz.hashtagsubscriber.util.converter
 
 import ci.ashamaz.hashtagsubscriber.model.Channel
 import org.springframework.core.convert.converter.Converter

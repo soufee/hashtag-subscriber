@@ -1,6 +1,5 @@
 package ci.ashamaz.hashtagsubscriber.bot
 
-
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -40,22 +39,30 @@ class SubscriberBot : TelegramLongPollingBot() {
     override fun onUpdateReceived(update: Update?) {
         Runnable {
             if (update == null) return@Runnable
-            var method: BotApiMethod<*>? = null
             if (update.hasChannelPost()) {
-                method = processor?.processChannelPost(update)
+                processor?.processChannelPost(update)
             } else {
-                method = processor?.processPersonalPost(update)
+                processor?.processPersonalPost(update)
             }
-            executor(method)
+            sendMessages()
         }.run()
     }
 
-    fun executor(method: BotApiMethod<Message>?) {
-        execute(method)
-    }
 
     @PostConstruct
     fun connected() {
         logger.info("Бот запущен")
+  //      sendMessages()
+    }
+
+    fun sendMessages(){
+        Runnable {
+                val collection = processor?.getMessageList()
+                while (!collection.isNullOrEmpty()) {
+                    execute(collection.poll())
+                }
+
+        }.run()
+
     }
 }

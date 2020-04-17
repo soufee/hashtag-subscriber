@@ -8,7 +8,7 @@ import java.util.function.Predicate
 
 interface MessageService {
     fun getMessageById(id: Long): Message?
-    fun save(message: Message)
+    fun save(message: Message): Message?
     fun delete(message: Message)
     fun getAll(): List<Message>
     fun getAllByDate(date: LocalDate): List<Message>

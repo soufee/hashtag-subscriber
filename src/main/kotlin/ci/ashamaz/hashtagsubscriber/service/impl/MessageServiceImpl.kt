@@ -26,11 +26,11 @@ class MessageServiceImpl : MessageService {
         return messageRepo?.getOne(id)
     }
 
-    override fun save(message: Message) {
+    override fun save(message: Message): Message? {
         if (!message.tags.isEmpty()) {
             message.tags.forEach { hashTagService?.saveTag(it) }
         }
-        messageRepo?.save(message)
+        return messageRepo?.save(message)
     }
 
     override fun delete(message: Message) {

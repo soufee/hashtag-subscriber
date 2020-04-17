@@ -1,4 +1,4 @@
-package ci.ashamaz.hashtagsubscriber.util
+package ci.ashamaz.hashtagsubscriber.util.converter
 
 import org.telegram.telegrambots.meta.api.objects.User
 import ci.ashamaz.hashtagsubscriber.model.ContactUser
