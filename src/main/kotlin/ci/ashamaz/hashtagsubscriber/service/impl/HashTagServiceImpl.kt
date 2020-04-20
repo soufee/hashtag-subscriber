@@ -7,9 +7,12 @@ import ci.ashamaz.hashtagsubscriber.service.ContactUserService
 import ci.ashamaz.hashtagsubscriber.service.HashTagService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
+@Transactional
+
 class HashTagServiceImpl(@Autowired val repo: HashTagRepository) : HashTagService {
 
     @Autowired

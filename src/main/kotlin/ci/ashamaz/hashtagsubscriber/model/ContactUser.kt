@@ -31,5 +31,7 @@ data class ContactUser(
         @ManyToMany(fetch = FetchType.EAGER)
         val subscriptions: Set<HashTag> = mutableSetOf()
 
+        @ManyToMany(fetch = FetchType.EAGER)
+        val excludedChannels: Set<Channel> = mutableSetOf()
 }
 

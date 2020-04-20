@@ -16,7 +16,7 @@ import java.util.*
 class MessageConverter: Converter<TgmMessage, Message> {
     @Autowired
     val channelService: ChannelService?=null
-    override fun convert(source: TgmMessage): Message? {
+    override fun convert(source: TgmMessage): Message {
         return Message(
                 messageId = source.messageId.toLong(),
                 date = getLocalDate(source.date),

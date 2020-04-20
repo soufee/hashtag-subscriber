@@ -26,4 +26,7 @@ data class Channel (
 {
         @OneToMany(mappedBy = "channel", fetch = FetchType.EAGER)
         val messages: Set<Message> = mutableSetOf()
+
+        @ManyToMany(mappedBy = "excludedChannels", fetch = FetchType.EAGER)
+        val exclusions: Set<ContactUser> = mutableSetOf()
 }

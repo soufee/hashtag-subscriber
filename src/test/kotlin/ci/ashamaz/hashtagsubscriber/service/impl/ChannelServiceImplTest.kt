@@ -1,18 +1,14 @@
 package ci.ashamaz.hashtagsubscriber.service.impl
 
-import org.junit.jupiter.api.Test
+import org.junit.Test
 
 import org.junit.jupiter.api.Assertions.*
-import org.junit.runner.RunWith
-import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.junit4.SpringRunner
 
-@ContextConfiguration
-@RunWith (SpringRunner::class)
-internal class ChannelServiceImplTest {
+class ChannelServiceImplTest {
 
     @Test
     fun getChannelById() {
+        assertTrue(true)
     }
 
     @Test

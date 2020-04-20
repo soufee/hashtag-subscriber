@@ -73,7 +73,7 @@ class ProcessPostImpl : ProcessPost {
         val post = update.channelPost
 
         val channelByChatId = channelService?.getChannelByChatId(post.chatId)
-        if (channelByChatId?.banned==true) return
+        if (channelByChatId?.banned == true) return
         if (channelByChatId == null) {
             val channel = Channel(
                     chatId = post.chatId,
@@ -86,9 +86,9 @@ class ProcessPostImpl : ProcessPost {
         val message = saveMessage(post)
         val tags = message?.tags
         val setOfUsers = mutableSetOf<ContactUser>()
-        tags?.forEach {
+        tags?.forEach { it ->
             val hashtag = hashTagService?.getByTag(it.tag)
-            val users = hashtag?.subscribers
+            val users = hashtag?.subscribers?.filter { !it.excludedChannels.contains(channelByChatId) }
             users?.forEach { setOfUsers.add(it) }
         }
         setOfUsers.forEach {
@@ -116,8 +116,10 @@ class ProcessPostImpl : ProcessPost {
         val message = update.message
         val user = message?.from
         val chatId = message?.chatId
-
-        val contact = userConverter?.convert(user!!)
+        var contact: ContactUser? = null
+        if (user != null) {
+            contact = userConverter?.convert(user)
+        }
         if (contact != null) {
             if (chatId != null) {
                 val c = userService?.getContactUserByChatId(chatId)
@@ -164,22 +166,8 @@ class ProcessPostImpl : ProcessPost {
                 }
             }
             text.startsWith("/exclude") -> {
-                val groups = text.split(" ")
-                if (groups.size < 2) {
-                    //TODO ваши исключенные каналы
-                    sendMsg(chatId.toString(), """
-                        *Неверная команда*
-                        Для исключения группы из вашей рассылки, нужно написать
-                        /exclude и через пробел перечислить список групп, которые вы хотите исключить
-                    """.trimIndent())
-                } else {
-                    for (i in 1 until groups.size) {
-                        logger.debug("Исключаем ${groups[i]}")
-                        //excludeGroup(text, chatId)
-                        //TODO исключить из рассылки группу
-                    }
+                excludeGroup(text, chatId)
 
-                }
 
             }
             text.startsWith("/mylist") -> {
@@ -193,6 +181,56 @@ class ProcessPostImpl : ProcessPost {
 
             }
         }
+    }
+
+    private fun excludeGroup(text: String, chatId: Long?) {
+        if (chatId == null) return
+        val userByChatId = userService?.getContactUserByChatId(chatId) ?: return
+
+
+        val groups = text.split(" ")
+        if (groups.size < 2) {
+            sendMsg(chatId.toString(), """
+                        Для исключения группы из вашей рассылки, нужно написать
+                        /exclude и через пробел перечислить список групп, которые вы хотите исключить
+                    """.trimIndent())
+            showExcludedChannels(chatId)
+        } else {
+            val wrongs = mutableListOf<String>()
+            for (i in 1 until groups.size) {
+                logger.debug("Исключаем ${groups[i]}")
+                val channel = channelService?.getChannelByName(groups[i])
+                if (channel != null) {
+                    val excluded = userByChatId.excludedChannels as MutableSet<Channel>
+                    excluded.add(channel)
+                } else {
+                    wrongs.add(groups[i])
+                }
+            }
+            userService?.saveOrUpdateContactUser(userByChatId)
+            if (wrongs.size > 0) {
+                val wrongChannelNames = wrongs.joinToString (" ")
+                sendMsg(chatId.toString(), """
+                    Введенные названия каналов не найдены
+                    $wrongChannelNames
+                """.trimIndent())
+            }
+            showExcludedChannels(chatId)
+        }
+    }
+
+    private fun showExcludedChannels(chatId: Long) {
+        val excluded = excludedChannelNames(chatId)
+        val text = "Список ваших исключенных каналов пуст"
+        if (excluded.isNullOrEmpty()) sendMsg(chatId.toString(), text)
+        else sendMsg(chatId.toString(), """
+                Список ваших исключенных каналов
+                ${excluded.stream().map { it.channelName }.collect(Collectors.toList()).joinToString(" ")}
+            """.trimIndent())
+    }
+
+    private fun excludedChannelNames(chatId: Long): Set<Channel> {
+        return userService?.getContactUserByChatId(chatId)?.excludedChannels.orEmpty()
     }
 
     private fun unsubscribeTags(chatId: Long?, text: String) {
@@ -238,12 +276,15 @@ class ProcessPostImpl : ProcessPost {
     private fun showSubscribedList(chatId: Long?) {
         if (chatId != null) {
             val user = userService?.getContactUserByChatId(chatId)
-            val subscriptions = user?.subscriptions
-            val list = subscriptions?.stream()?.map { it.tag }?.collect(Collectors.toList())?.joinToString(" ")
-            sendMsg(chatId.toString(), """
+            val subscriptions = user?.subscriptions.orEmpty()
+            if (subscriptions.isNotEmpty()) {
+                val list = subscriptions.stream().map { it.tag }?.collect(Collectors.toList())?.joinToString(" ")
+
+                sendMsg(chatId.toString(), """
                 Список ваших подписок: 
                 $list
             """.trimIndent())
+            } else sendMsg(chatId.toString(), "Список ваших подписок пуст")
         }
     }
 

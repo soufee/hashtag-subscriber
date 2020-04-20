@@ -12,5 +12,4 @@ class HashtagSubscriberApplication
 fun main(args: Array<String>) {
     ApiContextInitializer.init()
     runApplication<HashtagSubscriberApplication>(*args)
-
 }
