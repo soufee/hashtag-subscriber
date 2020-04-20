@@ -23,4 +23,21 @@ data class HashTag(
 
     @ManyToMany(mappedBy = "tags", fetch = FetchType.EAGER)
     var messages: Set<Message> = mutableSetOf()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as HashTag
+
+        if (tag != other.tag) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return tag.hashCode()
+    }
+
+
 }

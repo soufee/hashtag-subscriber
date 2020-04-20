@@ -52,7 +52,6 @@ class SubscriberBot : TelegramLongPollingBot() {
     @PostConstruct
     fun connected() {
         logger.info("Бот запущен")
-  //      sendMessages()
     }
 
     fun sendMessages(){
