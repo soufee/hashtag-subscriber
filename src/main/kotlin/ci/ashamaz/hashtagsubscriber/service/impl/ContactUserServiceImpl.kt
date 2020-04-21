@@ -11,32 +11,34 @@ import java.time.LocalDateTime
 
 @Service
 @Transactional
-class ContactUserServiceImpl(@Autowired
-                             val repo: ContactUserRepository,
-                             @Autowired
-                             val hashTagService: HashTagService) : ContactUserService {
+class ContactUserServiceImpl : ContactUserService {
+    @Autowired
+    val repo: ContactUserRepository?=null
 
-    override fun getCotactUserById(id: Long): ContactUser {
-        return repo.findById(id).orElse(null)
+    @Autowired
+    val hashTagService: HashTagService?=null
+
+    override fun getCotactUserById(id: Long): ContactUser? {
+        return repo?.findById(id)?.orElse(null)
     }
 
     override fun getCotactUserByUserName(name: String): ContactUser? {
-        return repo.getContactUserByUserName(name)
+        return repo?.getContactUserByUserName(name)
     }
 
     @Transactional
     override fun getContactUserByChatId(id: Long): ContactUser? {
-        return repo.getContactUserByChatId(id)
+        return repo?.getContactUserByChatId(id)
     }
 
     override fun saveOrUpdateContactUser(user: ContactUser) {
-        user.admin = (repo.count() == 0L)
+        user.admin = (repo?.count() == 0L)
         if (user.subscriptions.isNotEmpty()) {
             user.subscriptions.forEach {
                 it.lastSubscribedDate = LocalDateTime.now()
-                hashTagService.saveTag(it)
+                hashTagService?.saveTag(it)
             }
         }
-        repo.save(user)
+        repo?.save(user)
     }
 }
