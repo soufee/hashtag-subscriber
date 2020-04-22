@@ -18,7 +18,9 @@ data class Message(
         @JoinColumn(name = "channel_id")
         val channel: Channel? = null,
         @Column(length = 5000)
-        val caption: String? = null
+        val caption: String? = null,
+        @Column(name = "link")
+        var link: String? = ""
 ) {
     @ManyToMany(fetch = FetchType.EAGER, cascade = [CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH])
     var tags: Set<HashTag> = mutableSetOf()

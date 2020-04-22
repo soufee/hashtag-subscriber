@@ -8,6 +8,8 @@ import java.util.function.Predicate
 
 interface MessageService {
     fun getMessageById(id: Long): Message?
+    fun getByMessageIdAndChannel(messageId: Long, channel: Channel): Message?
+    fun getMessageByLink(link: String): Message?
     fun save(message: Message): Message?
     fun delete(message: Message)
     fun getAll(): List<Message>

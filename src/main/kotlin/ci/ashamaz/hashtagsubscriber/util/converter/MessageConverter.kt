@@ -23,7 +23,8 @@ class MessageConverter: Converter<TgmMessage, Message> {
                 text = source.text,
                 title = source.chat.title,
                 channel = getChannel(source.chatId),
-                caption = source.caption
+                caption = source.caption,
+                link = getChannel(source.chatId)?.link+"/"+source.messageId
         )
     }
 

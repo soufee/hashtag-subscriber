@@ -30,6 +30,7 @@ class HashTagServiceImpl(@Autowired val repo: HashTagRepository) : HashTagServic
             repo.save(tag)
         } else {
             tagInDB.lastMentionedDate = LocalDateTime.now()
+            tagInDB.lastSubscribedDate = tag.lastSubscribedDate
             repo.save(tagInDB)
         }
     }

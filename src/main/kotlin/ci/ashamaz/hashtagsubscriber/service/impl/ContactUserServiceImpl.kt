@@ -35,7 +35,7 @@ class ContactUserServiceImpl : ContactUserService {
         user.admin = (repo?.count() == 0L)
         if (user.subscriptions.isNotEmpty()) {
             user.subscriptions.forEach {
-                it.lastSubscribedDate = LocalDateTime.now()
+                it.lastMentionedDate = LocalDateTime.now()
                 hashTagService?.saveTag(it)
             }
         }

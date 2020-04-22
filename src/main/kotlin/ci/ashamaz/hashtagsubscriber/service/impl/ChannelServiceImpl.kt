@@ -25,6 +25,10 @@ class ChannelServiceImpl(@Autowired
         return channelRepo.getByChannelName(name)
     }
 
+    override fun getChannelByLink(name: String): Channel? {
+        return channelRepo.getChannelByLink(name)
+    }
+
     override fun getChannels(): List<Channel> {
         return channelRepo.findAll()
     }

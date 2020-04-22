@@ -5,6 +5,7 @@ import ci.ashamaz.hashtagsubscriber.model.HashTag
 import ci.ashamaz.hashtagsubscriber.service.ChannelService
 import ci.ashamaz.hashtagsubscriber.service.ContactUserService
 import ci.ashamaz.hashtagsubscriber.service.HashTagService
+import ci.ashamaz.hashtagsubscriber.service.MessageService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -22,10 +23,15 @@ class CommandFactory : CommandExecutor {
 
     @Autowired
     val userService: ContactUserService? = null
+
     @Autowired
     var channelService: ChannelService? = null
+
     @Autowired
     var hashTagService: HashTagService? = null
+
+    @Autowired
+    var messageService: MessageService? = null
 
     val logger = LoggerFactory.getLogger(CommandFactory::class.java)
     val commands: EnumMap<Command, (Long, String, Int?) -> Unit> = EnumMap<Command, (Long, String, Int?) -> Unit>(Command::class.java)
@@ -65,14 +71,14 @@ class CommandFactory : CommandExecutor {
 
     private fun openAdminTools(chatId: Long, text: String, m: Int?) {
         val user = userService?.getContactUserByChatId(chatId)
-        if (user?.admin!=true)
-        replyMessage(chatId = chatId, messageId = m, text = "команда не доступна")
+        if (user?.admin != true)
+            replyMessage(chatId = chatId, messageId = m, text = "команда не доступна")
         else
-        replyMessage(chatId = chatId, messageId = m, text = "команда еще не поддерживается")
+            replyMessage(chatId = chatId, messageId = m, text = "команда еще не поддерживается")
     }
 
     private fun includeChannel(chatId: Long, text: String, m: Int?) {
-       // replyMessage(chatId = chatId, messageId = m, text = "команда еще не поддерживается")
+        // replyMessage(chatId = chatId, messageId = m, text = "команда еще не поддерживается")
         val userByChatId = userService?.getContactUserByChatId(chatId) ?: return
         val groups = text.split(" ")
         if (groups.size < 2) {
@@ -110,7 +116,7 @@ class CommandFactory : CommandExecutor {
             unsubscribeTags(chatId, text)
             showSubscribedList(chatId)
         } else {
-            replyMessage(chatId.toString(),m, """
+            replyMessage(chatId.toString(), m, """
                         Для отписки от хэштэгов нужно написать
                         /unsubscribe и через пробел перечислить список ваших хэштэгов, начиная со значка решетки '#'
                         Для описания доступных команд введите
@@ -153,16 +159,29 @@ class CommandFactory : CommandExecutor {
 
     private fun subscribeTags(chatId: Long?, text: String) {
         val tags = getTagsFromText(text)
+        val newtags = mutableSetOf<HashTag>()
         if (chatId != null) {
             val user = userService?.getContactUserByChatId(chatId)
             if (user != null) {
                 val subscriptions = user.subscriptions as MutableSet<HashTag>
-                tags.forEach { subscriptions.add(it) }
+                tags.forEach {
+                    if (!subscriptions.contains(it)) newtags.add(it)
+                    it.lastSubscribedDate = LocalDateTime.now()
+                    subscriptions.add(it)
+                }
                 userService?.saveOrUpdateContactUser(user)
             }
         }
+        newtags.forEach { t ->
+            val messages = messageService?.getAllWithHashTag(t).orEmpty()
+            messages.forEach {
+                sendMsg(chatId.toString(), """
+                    Cообщение с хэштэгом ${t.tag}
+                    ${it.link}
+                """.trimIndent())
+            }
+        }
     }
-
 
     private fun getTagsFromText(text: String): Set<HashTag> {
         val arguments = text.split(" ")

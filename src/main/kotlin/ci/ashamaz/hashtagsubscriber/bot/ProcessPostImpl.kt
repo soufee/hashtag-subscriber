@@ -62,7 +62,8 @@ class ProcessPostImpl : ProcessPost {
         if (channelByChatId == null) {
             val channel = Channel(
                     chatId = post.chatId,
-                    channelName = post.chat.userName
+                    channelName = post.chat.userName,
+                    link = "https://t.me/"+post.chat.userName
             )
             channelService?.saveOrUpdate(channel)
         }

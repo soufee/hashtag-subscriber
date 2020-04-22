@@ -26,6 +26,14 @@ class MessageServiceImpl : MessageService {
         return messageRepo?.findById(id)?.orElse(null)
     }
 
+    override fun getByMessageIdAndChannel(messageId: Long, channel: Channel): Message? {
+        return messageRepo?.getByMessageIdAndChannel(messageId, channel)
+    }
+
+    override fun getMessageByLink(link: String): Message? {
+        return messageRepo?.getMessageByLink(link)
+    }
+
     override fun save(message: Message): Message? {
         if (message.tags.isNotEmpty()) {
             message.tags.forEach { hashTagService?.saveTag(it) }
