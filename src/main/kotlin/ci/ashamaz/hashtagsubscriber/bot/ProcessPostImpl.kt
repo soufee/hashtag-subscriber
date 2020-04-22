@@ -87,7 +87,8 @@ class ProcessPostImpl : ProcessPost {
     private fun saveMessage(post: TgmMessage): Message? {
         val mes = messageConverter?.convert(post)
         if (mes != null) {
-            mes.tags = tagUtil?.getTagsFromText(mes.text) ?: mutableSetOf()
+            val text = mes.text?:"" + mes.caption?:""
+            mes.tags = tagUtil?.getTagsFromText(text) ?: mutableSetOf()
             return messageService?.save(mes)
         }
         return null

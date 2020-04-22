@@ -14,7 +14,7 @@ class TagUtil {
     fun getTagsFromText(text: String): Set<HashTag> {
         val result = mutableSetOf<HashTag>()
         if (text.contains('#')) {
-            var words = text.split(" ")
+            var words = text.split(" ", "\n")
             for (s in words) {
                 if (s.startsWith('#')) {
                     val t = hashtagService?.getByTag(s.trim())

@@ -1,6 +1,7 @@
 package ci.ashamaz.hashtagsubscriber
 
 import ci.ashamaz.hashtagsubscriber.service.impl.ChannelServiceImplTest
+import ci.ashamaz.hashtagsubscriber.service.impl.MessageServiceImplTest
 import ci.ashamaz.hashtagsubscriber.util.MessageConverterTest
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -13,7 +14,9 @@ import org.springframework.test.context.ActiveProfiles
 @ActiveProfiles("test")
 @Suite.SuiteClasses(
         MessageConverterTest::class,
-        ChannelServiceImplTest::class
+        ChannelServiceImplTest::class,
+        MessageServiceImplTest::class
+
 )
 class HashtagSubscriberApplicationTests {
 

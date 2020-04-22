@@ -23,19 +23,21 @@ class MessageServiceImpl : MessageService {
     val hashTagService: HashTagService? = null
 
     override fun getMessageById(id: Long): Message? {
-        return messageRepo?.getOne(id)
+        return messageRepo?.findById(id)?.orElse(null)
     }
 
     override fun save(message: Message): Message? {
-        if (!message.tags.isEmpty()) {
+        if (message.tags.isNotEmpty()) {
             message.tags.forEach { hashTagService?.saveTag(it) }
         }
         return messageRepo?.save(message)
     }
 
     override fun delete(message: Message) {
-        if (messageRepo?.existsById(message.id) == true)
+        if (messageRepo?.existsById(message.id) == true) {
+            message.tags = setOf()
             messageRepo?.delete(message)
+        }
     }
 
     override fun getAll(): List<Message> {
@@ -49,7 +51,7 @@ class MessageServiceImpl : MessageService {
     @Transactional
     override fun deleteAllOld(daysBefore: Int) {
         val list = getAll().stream().filter { it.date.dayOfYear <= LocalDate.now().minusDays(daysBefore.toLong()).dayOfYear }.toList()
-        list.forEach { messageRepo?.delete(it) }
+        list.forEach { delete(it) }
     }
 
     override fun getAllByDays(days: Int): List<Message> {

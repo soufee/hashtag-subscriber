@@ -249,7 +249,7 @@ class CommandFactory : CommandExecutor {
     }
 
     companion object {
-        private final val HELP_MESSAGE: String = """
+        private val HELP_MESSAGE: String = """
         *Доступные команды*
             - Для подписки на хэштэг или список хэштэгов, введите
             */subscribe* #хэштэг
