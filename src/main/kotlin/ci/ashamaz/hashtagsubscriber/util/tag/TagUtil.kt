@@ -14,10 +14,10 @@ class TagUtil {
     fun getTagsFromText(text: String): Set<HashTag> {
         val result = mutableSetOf<HashTag>()
         if (text.contains('#')) {
-            var words = text.split(" ", "\n", "\\.", "\\,")
+            val words = text.split("[\\s\n.,\\-]".toRegex())
             for (s in words) {
-                if (s.startsWith('#')) {
-                    val ss = s.trim().replace(".", "").replace(",", "")
+                val ss = s.replace("[^#a-zA-Zа-яА-Я0-9_]".toRegex(), "").trim().intern()
+                if (ss.startsWith("#")) {
                     val t = hashtagService?.getByTag(ss)
                     if (t == null)
                         result.add(HashTag(tag = ss.trim(), lastMentionedDate = LocalDateTime.now(), registrationDate = LocalDateTime.now()))
@@ -26,6 +26,7 @@ class TagUtil {
                         result.add(t)
                     }
                 }
+
             }
         }
 

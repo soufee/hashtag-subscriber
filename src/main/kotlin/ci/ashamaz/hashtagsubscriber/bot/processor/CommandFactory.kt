@@ -1,4 +1,4 @@
-package ci.ashamaz.hashtagsubscriber.bot
+package ci.ashamaz.hashtagsubscriber.bot.processor
 
 import ci.ashamaz.hashtagsubscriber.model.Channel
 import ci.ashamaz.hashtagsubscriber.model.HashTag
@@ -294,7 +294,7 @@ class CommandFactory : CommandExecutor {
 
         fun sendMsg(chatId: String?, s: String?) {
             val message = SendMessage()
-            message.enableMarkdown(true)
+            message.enableMarkdown(false)
             message.chatId = chatId
             message.text = s
             messageQueue.add(message)
@@ -308,7 +308,7 @@ class CommandFactory : CommandExecutor {
             if (messageId == null) sendMsg(chatId, text)
             else {
                 val sendMessage = SendMessage()
-                sendMessage.enableMarkdown(true)
+                sendMessage.enableMarkdown(false)
                 sendMessage.chatId = chatId
                 sendMessage.replyToMessageId = messageId
                 sendMessage.text = text

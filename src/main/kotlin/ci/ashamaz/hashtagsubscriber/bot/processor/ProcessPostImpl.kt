@@ -1,4 +1,4 @@
-package ci.ashamaz.hashtagsubscriber.bot
+package ci.ashamaz.hashtagsubscriber.bot.processor
 
 import ci.ashamaz.hashtagsubscriber.model.Channel
 import ci.ashamaz.hashtagsubscriber.service.ChannelService
@@ -9,7 +9,6 @@ import org.springframework.core.convert.converter.Converter
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod
 import org.telegram.telegrambots.meta.api.methods.ForwardMessage
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Update
 import java.lang.IllegalArgumentException
 import java.time.LocalDateTime
@@ -18,13 +17,10 @@ import ci.ashamaz.hashtagsubscriber.service.MessageService
 import org.telegram.telegrambots.meta.api.objects.Message as TgmMessage
 import org.telegram.telegrambots.meta.api.objects.User
 import ci.ashamaz.hashtagsubscriber.model.ContactUser
-import ci.ashamaz.hashtagsubscriber.model.HashTag
 import ci.ashamaz.hashtagsubscriber.service.ContactUserService
 import ci.ashamaz.hashtagsubscriber.service.HashTagService
 import ci.ashamaz.hashtagsubscriber.util.tag.TagUtil
-import com.google.gson.Gson
 import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.stream.Collectors
 
 @Component
 class ProcessPostImpl : ProcessPost {
@@ -67,6 +63,7 @@ class ProcessPostImpl : ProcessPost {
             )
             channelService?.saveOrUpdate(channel)
         }
+        if (!post.text.contains("#")) return
         val message = saveMessage(post)
         val tags = message?.tags
         val setOfUsers = mutableSetOf<ContactUser>()

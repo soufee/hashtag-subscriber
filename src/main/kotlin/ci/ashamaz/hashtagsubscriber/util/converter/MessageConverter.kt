@@ -17,19 +17,16 @@ class MessageConverter: Converter<TgmMessage, Message> {
     @Autowired
     val channelService: ChannelService?=null
     override fun convert(source: TgmMessage): Message {
+        val ch = channelService?.getChannelByChatId(source.chatId)
         return Message(
                 messageId = source.messageId.toLong(),
                 date = getLocalDate(source.date),
                 text = source.text,
                 title = source.chat.title,
-                channel = getChannel(source.chatId),
+                channel = ch,
                 caption = source.caption,
-                link = getChannel(source.chatId)?.link+"/"+source.messageId
+                link = ch?.link+"/"+source.messageId
         )
-    }
-
-    private fun getChannel(chatId: Long): Channel? {
-        return channelService?.getChannelByChatId(chatId)
     }
 
     private fun getLocalDate(date: Int?): LocalDateTime {
