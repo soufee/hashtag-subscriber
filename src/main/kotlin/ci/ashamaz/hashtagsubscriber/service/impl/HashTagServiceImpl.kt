@@ -13,13 +13,15 @@ import java.time.LocalDateTime
 @Service
 @Transactional
 
-class HashTagServiceImpl(@Autowired val repo: HashTagRepository) : HashTagService {
+class HashTagServiceImpl : HashTagService {
 
+    @Autowired
+    val repo: HashTagRepository?=null
     @Autowired
     val userService: ContactUserService?=null
 
     override fun getTagsByContactUser(user: ContactUser): List<HashTag> {
-        return repo.getHashTagsBySubscribers(user)
+        return repo?.getHashTagsBySubscribers(user).orEmpty()
     }
 
     override fun saveTag(tag: HashTag) {
@@ -27,24 +29,24 @@ class HashTagServiceImpl(@Autowired val repo: HashTagRepository) : HashTagServic
         if (tagInDB == null) {
             tag.lastMentionedDate = LocalDateTime.now()
             tag.registrationDate = LocalDateTime.now()
-            repo.save(tag)
+            repo?.save(tag)
         } else {
             tagInDB.lastMentionedDate = LocalDateTime.now()
             tagInDB.lastSubscribedDate = tag.lastSubscribedDate
-            repo.save(tagInDB)
+            repo?.save(tagInDB)
         }
     }
 
     override fun getTag(id: Long): HashTag? {
-        return repo.findById(id).orElse(null)
+        return repo?.findById(id)?.orElse(null)
     }
 
     override fun getAll(): List<HashTag> {
-        return repo.findAll()
+        return repo?.findAll().orEmpty()
     }
 
     override fun getByTag(tag: String): HashTag? {
-        return repo.getByTag(tag)
+        return repo?.getByTag(tag)
     }
 
     override fun subscribeTag(tag: String, user: ContactUser) {

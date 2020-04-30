@@ -5,6 +5,7 @@ import org.springframework.core.convert.converter.Converter
 import ci.ashamaz.hashtagsubscriber.model.Message
 import org.telegram.telegrambots.meta.api.objects.Message as TgmMessage
 import ci.ashamaz.hashtagsubscriber.service.ChannelService
+import ci.ashamaz.hashtagsubscriber.util.extention.setLinks
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
@@ -18,7 +19,7 @@ class MessageConverter: Converter<TgmMessage, Message> {
     val channelService: ChannelService?=null
     override fun convert(source: TgmMessage): Message {
         val ch = channelService?.getChannelByChatId(source.chatId)
-        return Message(
+        val mes =  Message(
                 messageId = source.messageId.toLong(),
                 date = getLocalDate(source.date),
                 text = source.text,
@@ -27,6 +28,8 @@ class MessageConverter: Converter<TgmMessage, Message> {
                 caption = source.caption,
                 link = ch?.link+"/"+source.messageId
         )
+        mes.setLinks()
+        return mes
     }
 
     private fun getLocalDate(date: Int?): LocalDateTime {

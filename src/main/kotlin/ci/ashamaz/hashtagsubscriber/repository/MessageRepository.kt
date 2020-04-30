@@ -10,4 +10,5 @@ interface MessageRepository: JpaRepository<Message, Long> {
     fun getAllByTagsContains(tag: HashTag): List<Message>
     fun getByMessageIdAndChannel(messageId: Long, channel: Channel): Message?
     fun getMessageByLink(link: String): Message?
+    fun getMessageByWeblink(link: String): Message?
 }

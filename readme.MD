@@ -1,5 +1,6 @@
 ## TODO-list
 
+- ignoreCase
 - проверка хэштэгов при подписке
 + block 
 + and unblock channels

@@ -10,34 +10,40 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional
-class ChannelServiceImpl(@Autowired
-                         val channelRepo: ChannelRepository) : ChannelService {
+class ChannelServiceImpl : ChannelService {
+
+    @Autowired
+    val channelRepo: ChannelRepository?=null
 
     override fun getChannelById(id: Long): Channel? {
-        return channelRepo.findByIdOrNull(id)
+        return channelRepo?.findByIdOrNull(id)
     }
 
     override fun getChannelByChatId(id: Long): Channel? {
-        return channelRepo.getByChatId(id)
+        return channelRepo?.getByChatId(id)
     }
 
     override fun getChannelByName(name: String): Channel? {
-        return channelRepo.getByChannelName(name)
+        return channelRepo?.getByChannelName(name)
     }
 
     override fun getChannelByLink(name: String): Channel? {
-        return channelRepo.getChannelByLink(name)
+        return channelRepo?.getChannelByLink(name)
+    }
+
+    override fun getChannelByWeblink(link: String): Channel? {
+        return channelRepo?.getChannelByWeblink(link)
     }
 
     override fun getChannels(): List<Channel> {
-        return channelRepo.findAll()
+        return channelRepo?.findAll().orEmpty()
     }
 
     override fun saveOrUpdate(channel: Channel) {
-        channelRepo.save(channel)
+        channelRepo?.save(channel)
     }
 
     override fun removeChannel(channel: Channel) {
-        channelRepo.delete(channel)
+        channelRepo?.delete(channel)
     }
 }

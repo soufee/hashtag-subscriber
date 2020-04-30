@@ -34,6 +34,10 @@ class MessageServiceImpl : MessageService {
         return messageRepo?.getMessageByLink(link)
     }
 
+    override fun getMessageByWeblink(link: String): Message? {
+        return messageRepo?.getMessageByWeblink(link)
+    }
+
     override fun save(message: Message): Message? {
         if (message.tags.isNotEmpty()) {
             message.tags.forEach { hashTagService?.saveTag(it) }

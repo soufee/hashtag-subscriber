@@ -6,6 +6,7 @@ import ci.ashamaz.hashtagsubscriber.service.ChannelService
 import ci.ashamaz.hashtagsubscriber.service.ContactUserService
 import ci.ashamaz.hashtagsubscriber.service.HashTagService
 import ci.ashamaz.hashtagsubscriber.service.MessageService
+import ci.ashamaz.hashtagsubscriber.util.ChannelPaser
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -78,7 +79,6 @@ class CommandFactory : CommandExecutor {
     }
 
     private fun includeChannel(chatId: Long, text: String, m: Int?) {
-        // replyMessage(chatId = chatId, messageId = m, text = "команда еще не поддерживается")
         val userByChatId = userService?.getContactUserByChatId(chatId) ?: return
         val groups = text.split(" ")
         if (groups.size < 2) {
@@ -269,21 +269,21 @@ class CommandFactory : CommandExecutor {
 
     companion object {
         private val HELP_MESSAGE: String = """
-        *Доступные команды*
+        Доступные команды
             - Для подписки на хэштэг или список хэштэгов, введите
-            */subscribe* #хэштэг
+            /subscribe #хэштэг
             Если вы подписываетесь на несколько хэштэгов, их нужно перечислить через пробел. 
             Внимание! Решетка в названии хэштэга обязательна!
             
             - Для отписки введите
-            */unsubscribe* #хэштэг
+            /unsubscribe #хэштэг
             Также можно отписаться списком через пробел
             
             - Для просмотра списка ваших подписок введите
-            */list*
+            /list
             
             - Для исключения конкретного канала из вашей рассылки введите
-            */exclude* названиеКанала
+            /exclude названиеКанала
         """.trimIndent()
 
         val messageQueue = ConcurrentLinkedQueue<BotApiMethod<Message>>()

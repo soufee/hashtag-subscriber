@@ -23,7 +23,9 @@ data class Channel(
         @Column(name = "banned")
         var banned: Boolean = false,
         @Column(name = "link")
-        var link: String? = ""
+        var link: String? = "",
+        @Column(name = "weblink")
+        var weblink: String? = ""
 ) {
     @OneToMany(mappedBy = "channel", fetch = FetchType.EAGER)
     val messages: Set<Message> = mutableSetOf()

@@ -20,7 +20,9 @@ data class Message(
         @Column(length = 5000)
         val caption: String? = null,
         @Column(name = "link")
-        var link: String? = ""
+        var link: String? = "",
+        @Column(name = "weblink")
+        var weblink: String? = ""
 ) {
     @ManyToMany(fetch = FetchType.EAGER, cascade = [CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH])
     var tags: Set<HashTag> = mutableSetOf()

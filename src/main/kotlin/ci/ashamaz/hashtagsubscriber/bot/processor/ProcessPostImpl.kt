@@ -19,6 +19,8 @@ import org.telegram.telegrambots.meta.api.objects.User
 import ci.ashamaz.hashtagsubscriber.model.ContactUser
 import ci.ashamaz.hashtagsubscriber.service.ContactUserService
 import ci.ashamaz.hashtagsubscriber.service.HashTagService
+import ci.ashamaz.hashtagsubscriber.util.ChannelPaser
+import ci.ashamaz.hashtagsubscriber.util.extention.setLinks
 import ci.ashamaz.hashtagsubscriber.util.tag.TagUtil
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -55,15 +57,19 @@ class ProcessPostImpl : ProcessPost {
 
         val channelByChatId = channelService?.getChannelByChatId(post.chatId)
         if (channelByChatId?.banned == true) return
+        val username = post.chat.userName
+        if (username.isNullOrBlank()) return
         if (channelByChatId == null) {
             val channel = Channel(
                     chatId = post.chatId,
-                    channelName = post.chat.userName,
-                    link = "https://t.me/"+post.chat.userName
+                    channelName = username,
+                    link = "https://t.me/$username"
             )
+            channel.setLinks()
             channelService?.saveOrUpdate(channel)
         }
-        if (!post.text.contains("#")) return
+        val str = post?.text?:"" + post?.caption?:""
+        if (!str.contains("#")) return
         val message = saveMessage(post)
         val tags = message?.tags
         val setOfUsers = mutableSetOf<ContactUser>()
@@ -138,7 +144,9 @@ class ProcessPostImpl : ProcessPost {
                 commandExecutor?.executeCommand(Command.ADMIN, chatId, message.messageId, text)
             }
             else -> {
-                CommandFactory.sendHelpInfo("Команда не распознана", message.messageId, chatId)
+                val parser = ChannelPaser()
+                parser.parse()
+               // CommandFactory.sendHelpInfo("Команда не распознана", message.messageId, chatId)
             }
         }
     }

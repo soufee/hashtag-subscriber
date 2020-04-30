@@ -23,7 +23,6 @@ class SubscriberBot : TelegramLongPollingBot() {
     var botName: String? = null
 
     @Value("\${bot.token}")
-
     var token: String? = null
 
 
@@ -36,15 +35,13 @@ class SubscriberBot : TelegramLongPollingBot() {
     }
 
     override fun onUpdateReceived(update: Update?) {
-        Runnable {
-            if (update == null) return@Runnable
+            if (update == null) return
             if (update.hasChannelPost()) {
                 processor?.processChannelPost(update)
             } else {
                 processor?.processPersonalPost(update)
             }
             sendMessages()
-        }.run()
     }
 
 
