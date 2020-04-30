@@ -1,15 +1,17 @@
 package ci.ashamaz.hashtagsubscriber.bot.processor
 
+import ci.ashamaz.hashtagsubscriber.bot.processor.enums.Command
+import ci.ashamaz.hashtagsubscriber.bot.processor.intrfc.CommandExecutor
 import ci.ashamaz.hashtagsubscriber.model.Channel
 import ci.ashamaz.hashtagsubscriber.model.HashTag
 import ci.ashamaz.hashtagsubscriber.service.ChannelService
 import ci.ashamaz.hashtagsubscriber.service.ContactUserService
 import ci.ashamaz.hashtagsubscriber.service.HashTagService
 import ci.ashamaz.hashtagsubscriber.service.MessageService
-import ci.ashamaz.hashtagsubscriber.util.ChannelPaser
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Message
@@ -33,6 +35,8 @@ class CommandFactory : CommandExecutor {
 
     @Autowired
     var messageService: MessageService? = null
+
+    var bot: TelegramLongPollingBot?=null
 
     val logger = LoggerFactory.getLogger(CommandFactory::class.java)
     val commands: EnumMap<Command, (Long, String, Int?) -> Unit> = EnumMap<Command, (Long, String, Int?) -> Unit>(Command::class.java)
@@ -68,6 +72,12 @@ class CommandFactory : CommandExecutor {
     override fun executeCommand(command: Command, chatId: Long, messageId: Int?, text: String) {
         logger.debug("Command $command, chatId $chatId, messageId $messageId, text $text")
         commands[command]?.invoke(chatId, text, messageId)
+    }
+
+    override fun registerBot(bot: TelegramLongPollingBot) {
+        if (this.bot==null) {
+            this.bot = bot
+        }
     }
 
     private fun openAdminTools(chatId: Long, text: String, m: Int?) {
@@ -267,6 +277,39 @@ class CommandFactory : CommandExecutor {
         }
     }
 
+
+    fun sendMsg(chatId: String?, s: String?) {
+        val message = SendMessage()
+        message.enableMarkdown(false)
+        message.chatId = chatId
+        message.text = s
+        if (bot!=null) bot?.execute(message)
+        else messageQueue.add(message)
+    }
+
+    fun replyMessage(chatId: Long, messageId: Int?, text: String) {
+        replyMessage(chatId.toString(), messageId, text)
+    }
+
+    fun replyMessage(chatId: String, messageId: Int?, text: String) {
+        if (messageId == null) sendMsg(chatId, text)
+        else {
+            val sendMessage = SendMessage()
+            sendMessage.enableMarkdown(false)
+            sendMessage.chatId = chatId
+            sendMessage.replyToMessageId = messageId
+            sendMessage.text = text
+            if (bot!=null) bot?.execute(sendMessage)
+            messageQueue.add(sendMessage)
+        }
+
+    }
+
+    fun sendHelpInfo(prefix: String = "", messageId: Int?, chatId: Long?) {
+        replyMessage(chatId.toString(), messageId, prefix + "\n" + HELP_MESSAGE)
+    }
+
+
     companion object {
         private val HELP_MESSAGE: String = """
         Доступные команды
@@ -292,33 +335,5 @@ class CommandFactory : CommandExecutor {
             return messageQueue
         }
 
-        fun sendMsg(chatId: String?, s: String?) {
-            val message = SendMessage()
-            message.enableMarkdown(false)
-            message.chatId = chatId
-            message.text = s
-            messageQueue.add(message)
-        }
-
-        fun replyMessage(chatId: Long, messageId: Int?, text: String) {
-            replyMessage(chatId.toString(), messageId, text)
-        }
-
-        fun replyMessage(chatId: String, messageId: Int?, text: String) {
-            if (messageId == null) sendMsg(chatId, text)
-            else {
-                val sendMessage = SendMessage()
-                sendMessage.enableMarkdown(false)
-                sendMessage.chatId = chatId
-                sendMessage.replyToMessageId = messageId
-                sendMessage.text = text
-                messageQueue.add(sendMessage)
-            }
-
-        }
-
-        fun sendHelpInfo(prefix: String = "", messageId: Int?, chatId: Long?) {
-            replyMessage(chatId.toString(), messageId, prefix + "\n" + HELP_MESSAGE)
-        }
     }
 }

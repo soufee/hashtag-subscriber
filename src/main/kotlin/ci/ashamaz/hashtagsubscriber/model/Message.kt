@@ -26,4 +26,26 @@ data class Message(
 ) {
     @ManyToMany(fetch = FetchType.EAGER, cascade = [CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH])
     var tags: Set<HashTag> = mutableSetOf()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Message
+
+        if (messageId != other.messageId) return false
+        if (link != other.link) return false
+        if (weblink != other.weblink) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = messageId.hashCode()
+        result = 31 * result + (link?.hashCode() ?: 0)
+        result = 31 * result + (weblink?.hashCode() ?: 0)
+        return result
+    }
+
+
 }

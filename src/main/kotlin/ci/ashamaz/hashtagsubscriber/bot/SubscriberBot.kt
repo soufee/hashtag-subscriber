@@ -1,6 +1,8 @@
 package ci.ashamaz.hashtagsubscriber.bot
 
-import ci.ashamaz.hashtagsubscriber.bot.processor.ProcessPost
+import ci.ashamaz.hashtagsubscriber.bot.processor.ProcessPostImpl
+import ci.ashamaz.hashtagsubscriber.bot.processor.daemons.MessageSender
+import ci.ashamaz.hashtagsubscriber.bot.processor.intrfc.ProcessPost
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,29 +37,26 @@ class SubscriberBot : TelegramLongPollingBot() {
     }
 
     override fun onUpdateReceived(update: Update?) {
-            if (update == null) return
-            if (update.hasChannelPost()) {
-                processor?.processChannelPost(update)
-            } else {
-                processor?.processPersonalPost(update)
-            }
-            sendMessages()
+        if (update == null) return
+        if (update.hasChannelPost()) {
+            processor?.processChannelPost(update)
+        } else {
+            processor?.processPersonalPost(update, this)
+        }
     }
 
 
     @PostConstruct
     fun connected() {
         logger.info("Бот запущен")
-    }
-
-    fun sendMessages(){
-        Runnable {
-                val collection = processor?.getMessageList()
-                while (!collection.isNullOrEmpty()) {
-                    execute(collection.poll())
-                }
-
-        }.run()
-
+        if (processor is ProcessPostImpl) {
+            (processor as ProcessPostImpl).commandExecutor?.registerBot(this)
+        }
+        val collection = processor?.getMessageList()
+        if (collection != null) {
+            MessageSender(this, collection).start()
+        } else {
+            logger.error("Не удалось запустить поток обработки исходящих сообщений")
+        }
     }
 }

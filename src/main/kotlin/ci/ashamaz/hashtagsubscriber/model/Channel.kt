@@ -32,4 +32,26 @@ data class Channel(
 
     @ManyToMany(mappedBy = "excludedChannels", fetch = FetchType.EAGER)
     val exclusions: Set<ContactUser> = mutableSetOf()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Channel
+
+        if (channelName != other.channelName) return false
+        if (link != other.link) return false
+        if (weblink != other.weblink) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = channelName.hashCode()
+        result = 31 * result + (link?.hashCode() ?: 0)
+        result = 31 * result + (weblink?.hashCode() ?: 0)
+        return result
+    }
+
+
 }

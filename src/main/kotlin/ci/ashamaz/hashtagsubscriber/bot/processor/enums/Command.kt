@@ -1,4 +1,4 @@
-package ci.ashamaz.hashtagsubscriber.bot.processor
+package ci.ashamaz.hashtagsubscriber.bot.processor.enums
 
 enum class Command {
     LIST,

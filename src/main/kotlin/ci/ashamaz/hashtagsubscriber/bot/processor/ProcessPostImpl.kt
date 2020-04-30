@@ -1,5 +1,8 @@
 package ci.ashamaz.hashtagsubscriber.bot.processor
 
+import ci.ashamaz.hashtagsubscriber.bot.processor.enums.Command
+import ci.ashamaz.hashtagsubscriber.bot.processor.intrfc.CommandExecutor
+import ci.ashamaz.hashtagsubscriber.bot.processor.intrfc.ProcessPost
 import ci.ashamaz.hashtagsubscriber.model.Channel
 import ci.ashamaz.hashtagsubscriber.service.ChannelService
 import org.slf4j.Logger
@@ -22,11 +25,13 @@ import ci.ashamaz.hashtagsubscriber.service.HashTagService
 import ci.ashamaz.hashtagsubscriber.util.ChannelPaser
 import ci.ashamaz.hashtagsubscriber.util.extention.setLinks
 import ci.ashamaz.hashtagsubscriber.util.tag.TagUtil
+import org.telegram.telegrambots.bots.TelegramLongPollingBot
 import java.util.concurrent.ConcurrentLinkedQueue
 
 @Component
 class ProcessPostImpl : ProcessPost {
     private val logger: Logger = LoggerFactory.getLogger(ProcessPost::class.java)
+    private val T_ME_PREFIX = "https://t.me/"
 
     @Autowired
     val channelService: ChannelService? = null
@@ -54,28 +59,32 @@ class ProcessPostImpl : ProcessPost {
 
     override fun processChannelPost(update: Update) {
         val post = update.channelPost
-
-        val channelByChatId = channelService?.getChannelByChatId(post.chatId)
-        if (channelByChatId?.banned == true) return
         val username = post.chat.userName
         if (username.isNullOrBlank()) return
-        if (channelByChatId == null) {
-            val channel = Channel(
+        logger.info("$username sent a message ${post.messageId}")
+        var channel = channelService?.getChannelByLink(T_ME_PREFIX + username)
+        if (channel?.banned == true) return
+
+        if (channel == null || channel.chatId == 0L) {
+            channel = Channel(
                     chatId = post.chatId,
                     channelName = username,
-                    link = "https://t.me/$username"
+                    registrationDate = LocalDateTime.now(),
+                    link = T_ME_PREFIX + username
             )
             channel.setLinks()
-            channelService?.saveOrUpdate(channel)
         }
-        val str = post?.text?:"" + post?.caption?:""
+        channel.lastMessageDate = LocalDateTime.now()
+        channelService?.saveOrUpdate(channel)
+
+        val str = post?.text ?: "" + post?.caption ?: ""
         if (!str.contains("#")) return
         val message = saveMessage(post)
         val tags = message?.tags
         val setOfUsers = mutableSetOf<ContactUser>()
         tags?.forEach { it ->
             val hashtag = hashTagService?.getByTag(it.tag)
-            val users = hashtag?.subscribers?.filter { !it.excludedChannels.contains(channelByChatId) }
+            val users = hashtag?.subscribers?.filter { !it.excludedChannels.contains(channel) }
             users?.forEach { setOfUsers.add(it) }
         }
         setOfUsers.forEach {
@@ -91,14 +100,15 @@ class ProcessPostImpl : ProcessPost {
     private fun saveMessage(post: TgmMessage): Message? {
         val mes = messageConverter?.convert(post)
         if (mes != null) {
-            val text = mes.text?:"" + mes.caption?:""
+            val text = mes.text ?: "" + mes.caption
             mes.tags = tagUtil?.getTagsFromText(text) ?: mutableSetOf()
+            if (mes.tags.isNotEmpty())
             return messageService?.save(mes)
         }
         return null
     }
 
-    override fun processPersonalPost(update: Update) {
+    override fun processPersonalPost(update: Update, bot: TelegramLongPollingBot) {
         val text: String = update.message?.text.toString()
         logger.debug(text)
         val message = update.message
@@ -146,7 +156,7 @@ class ProcessPostImpl : ProcessPost {
             else -> {
                 val parser = ChannelPaser()
                 parser.parse()
-               // CommandFactory.sendHelpInfo("Команда не распознана", message.messageId, chatId)
+                // CommandFactory.sendHelpInfo("Команда не распознана", message.messageId, chatId)
             }
         }
     }
