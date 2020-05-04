@@ -201,7 +201,7 @@ class CommandFactory : CommandExecutor {
                 val tag = hashTagService?.getByTag(it)
                 if (tag != null) tags.add(tag)
                 else {
-                    val tag = HashTag(tag = it, registrationDate = LocalDateTime.now(), lastSubscribedDate = LocalDateTime.now())
+                    val tag = HashTag(tag = it.toLowerCase(), registrationDate = LocalDateTime.now(), lastSubscribedDate = LocalDateTime.now())
                     tags.add(tag)
                 }
             }

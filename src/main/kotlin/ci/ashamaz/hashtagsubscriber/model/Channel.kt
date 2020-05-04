@@ -10,8 +10,8 @@ data class Channel(
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         val channel_id: Long = 0L,
-        @Column(name = "chat_id", unique = true, nullable = false)
-        val chatId: Long = 0L,
+        @Column(name = "chat_id", nullable = true)
+        val chatId: Long? = null,
         @Column(name = "channel_name")
         val channelName: String = "",
         @Column(name = "registration_date", nullable = true)

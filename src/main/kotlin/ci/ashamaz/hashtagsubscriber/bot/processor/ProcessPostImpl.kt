@@ -57,6 +57,9 @@ class ProcessPostImpl : ProcessPost {
     @Autowired
     val commandExecutor: CommandExecutor? = null
 
+    @Autowired
+    val channelParser: ChannelPaser?=null
+
     override fun processChannelPost(update: Update) {
         val post = update.channelPost
         val username = post.chat.userName
@@ -65,7 +68,7 @@ class ProcessPostImpl : ProcessPost {
         var channel = channelService?.getChannelByLink(T_ME_PREFIX + username)
         if (channel?.banned == true) return
 
-        if (channel == null || channel.chatId == 0L) {
+        if (channel?.chatId == null) {
             channel = Channel(
                     chatId = post.chatId,
                     channelName = username,
@@ -154,8 +157,7 @@ class ProcessPostImpl : ProcessPost {
                 commandExecutor?.executeCommand(Command.ADMIN, chatId, message.messageId, text)
             }
             else -> {
-                val parser = ChannelPaser()
-                parser.parse()
+                channelParser?.parse()
                 // CommandFactory.sendHelpInfo("Команда не распознана", message.messageId, chatId)
             }
         }
