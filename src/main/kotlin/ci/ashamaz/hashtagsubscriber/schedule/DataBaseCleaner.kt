@@ -15,7 +15,7 @@ class DataBaseCleaner {
     @Autowired
     val messageService: MessageService?=null
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "0 0 * * * ?")
     fun reportCurrentData() {
         logger.info("Scheduler working: " + LocalDateTime.now())
         messageService?.deleteAllOld(2)

@@ -9,6 +9,6 @@ interface ChannelService {
     fun getChannelByLink(name: String): Channel?
     fun getChannelByWeblink(link: String): Channel?
     fun getChannels(): List<Channel>
-    fun saveOrUpdate(channel: Channel)
+    fun saveOrUpdate(channel: Channel): Channel?
     fun removeChannel(channel: Channel)
 }

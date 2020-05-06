@@ -1,7 +1,5 @@
 package ci.ashamaz.hashtagsubscriber.util
 
-import ci.ashamaz.hashtagsubscriber.bot.processor.CommandFactory
-import ci.ashamaz.hashtagsubscriber.bot.processor.intrfc.ProcessPost
 import ci.ashamaz.hashtagsubscriber.model.Channel
 import ci.ashamaz.hashtagsubscriber.model.Message
 import ci.ashamaz.hashtagsubscriber.service.ChannelService
@@ -9,30 +7,39 @@ import ci.ashamaz.hashtagsubscriber.service.MessageService
 import ci.ashamaz.hashtagsubscriber.util.extention.setLinks
 import ci.ashamaz.hashtagsubscriber.util.extention.shorten
 import ci.ashamaz.hashtagsubscriber.util.tag.TagUtil
-import com.google.gson.Gson
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.jsoup.safety.Whitelist
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.PropertySource
 import org.springframework.stereotype.Component
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import java.io.IOException
-import java.lang.IllegalArgumentException
-import java.lang.IllegalStateException
+import kotlin.IllegalArgumentException
 import kotlin.streams.toList
 
 @Component
-class ChannelPaser {
-    private val uri2 = "https://t.me/s/xCareers"
-    private val classifier = "tgme_widget_message_text js-message_text"
-    private val classifier_parent = "tgme_widget_message force_userpic js-widget_message"
-    private val photo_classifier = "tgme_widget_message_photo_wrap"
-    private val video_classifier = "tgme_widget_message_video_player"
-    private val logger: Logger = LoggerFactory.getLogger(ChannelPaser::class.java)
+@PropertySource("classpath:constants.properties")
+class ChannelParser {
+    @Value("\${parse.default.url}")
+    private val uri2: String = ""
+
+    @Value("\${parse.default.classifier}")
+    private val classifier = ""
+
+    @Value("\${parse.default.classifier_parent}")
+    private val classifierParent = ""
+
+    @Value("\${parse.default.photo_classifier}")
+    private val photoClassifier = ""
+
+    @Value("\${parse.default.video_classifier}")
+    private val videoClassifier: String = ""
+
+    private val logger: Logger = LoggerFactory.getLogger(ChannelParser::class.java)
 
     @Autowired
     val channelService: ChannelService? = null
@@ -41,21 +48,25 @@ class ChannelPaser {
     val tagUtil: TagUtil? = null
 
     @Autowired
-    val messageService: MessageService?=null
+    val messageService: MessageService? = null
+
+    fun getDocument(url: String = uri2): Document {
+        if (url.isEmpty()) throw IllegalArgumentException("Передан некоректный url = $url")
+        return Jsoup.connect(url).get()
+    }
 
     @Throws(IOException::class)
-    fun parse(url: String = uri2) {
-        val doc = Jsoup.connect(url).get()
-      //  println(doc)
+    fun parse(doc: Document?) {
+        if (doc == null) throw IllegalArgumentException("Предан некорректный документ")
         val title = doc.getElementsByTag("title").html().replace(" – Telegram", "")
-        val elements = doc.getElementsByClass(classifier_parent)
+        val elements = doc.getElementsByClass(classifierParent)
         val newUrls = mutableSetOf<String>()
         for (e in elements) {
             val txt = completeMessage(e, title)
             val key = e.attributes()["data-post"]
             val str = e.toString()// вот тут нужно анализировать на предмет наличия хэштэгов
-            var channel = channelService?.getChannelByWeblink(url)
-            if (channel!=null) {
+            var channel = channelService?.getChannelByLink(getChannelUrl(e))
+            if (channel != null) {
                 val tags = tagUtil?.getTagsFromText(str)
 
                 if (!tags.isNullOrEmpty()) {
@@ -63,7 +74,7 @@ class ChannelPaser {
                     val message = Message(
                             messageId = messId,
                             title = title,
-                            text =  txt,
+                            text = txt,
                             link = "http://t.me/$key",
                             channel = channel
                     )
@@ -112,9 +123,9 @@ class ChannelPaser {
 
     fun completeMessage(e: Element, title: String): String {
         val channelUrl = getChannelUrl(e)
-        val pictures = e.getElementsByClass(photo_classifier)
+        val pictures = e.getElementsByClass(photoClassifier)
         val messages = e.getElementsByClass(classifier)
-        val videos = e.getElementsByClass(video_classifier)
+        val videos = e.getElementsByClass(videoClassifier)
         val content = StringBuilder()
         content.append("""<b><a href="${channelUrl}">$title</a></b>""")
 
@@ -145,51 +156,61 @@ class ChannelPaser {
         return message
     }
 
-    fun getChannelUrl(e: Element): String? {
+    /**
+     * Метод принимает Элемент и формирует урл канала, которому он принадлежит
+     * */
+    fun getChannelUrl(e: Element): String {
         val channelName = getChannelName(e)
         return "https://t.me/${channelName}"
     }
 
+    /**
+     * Метод принимает Элемент и извлекает из него наименование канала
+     * */
     fun getChannelName(e: Element): String? {
-        val key = e.attributes()["data-post"]
+        val key = e.getElementsByAttribute("data-post").attr("data-post")
         return key.split("/").first()
     }
 
-    fun getChannelName(e: String?): String? {
-        val elements = e?.split("/")
-        if (elements?.size == 4)
-            return elements.last()
-        else if (elements?.size == 5)
-            return elements[4]
-        else throw IllegalArgumentException("Переданная строка не может быть распарсена корректно")
-    }
-
-
-    fun sendMsg(s: String?, url: String? = null) {
-        val message = SendMessage()
-        message.disableWebPagePreview()
-        message.enableMarkdown(false)
-        message.enableHtml(true)
-        message.chatId = "" + 87927916
-        message.text = s
-        if (url != null) {
-            val inlineKeyboardMarkup = InlineKeyboardMarkup()
-            val keyboardButtonsRow1 = makeRedirectButton(url)
-            inlineKeyboardMarkup.keyboard.add(keyboardButtonsRow1)
-            message.replyMarkup = inlineKeyboardMarkup
+    /**
+     * Метод принимает урл канала и извлекает из него название канала
+     * */
+    fun getChannelName(url: String?): String? {
+        if (url?.startsWith("https://t.me/") != true) {
+            throw IllegalArgumentException("Переданная строка не может быть распарсена корректно")
         }
-
-
-        CommandFactory.messageQueue.add(message)
+        val str = url.substring(13)
+        val strElements = str.split("/")
+        if ("s".equals(strElements[0])) return strElements[1]
+        else return strElements[0]
     }
 
-    fun makeRedirectButton(url: String, name: String = "Читать в источнике"): List<InlineKeyboardButton> {
-        val inlineKeyboardButton = InlineKeyboardButton()
-        inlineKeyboardButton.text = name
-        inlineKeyboardButton.callbackData = "Button $name has been pressed"
-        inlineKeyboardButton.url = url
-        val keyboardButtonsRow1 = mutableListOf<InlineKeyboardButton>()
-        keyboardButtonsRow1.add(inlineKeyboardButton)
-        return keyboardButtonsRow1
-    }
+
+//    fun sendMsg(s: String?, url: String? = null) {
+//        val message = SendMessage()
+//        message.disableWebPagePreview()
+//        message.enableMarkdown(false)
+//        message.enableHtml(true)
+//        message.chatId = "" + 87927916
+//        message.text = s
+//        if (url != null) {
+//            val inlineKeyboardMarkup = InlineKeyboardMarkup()
+//            val keyboardButtonsRow1 = makeRedirectButton(url)
+//            inlineKeyboardMarkup.keyboard.add(keyboardButtonsRow1)
+//            message.replyMarkup = inlineKeyboardMarkup
+//        }
+//
+//
+//        CommandFactory.messageQueue.add(message)
+//    }
+
+//    fun makeRedirectButton(url: String, name: String = "Читать в источнике"): List<InlineKeyboardButton> {
+//        val inlineKeyboardButton = InlineKeyboardButton()
+//        inlineKeyboardButton.text = name
+//        inlineKeyboardButton.callbackData = "Button $name has been pressed"
+//        inlineKeyboardButton.url = url
+//        val keyboardButtonsRow1 = mutableListOf<InlineKeyboardButton>()
+//        keyboardButtonsRow1.add(inlineKeyboardButton)
+//        return keyboardButtonsRow1
+//    }
 }

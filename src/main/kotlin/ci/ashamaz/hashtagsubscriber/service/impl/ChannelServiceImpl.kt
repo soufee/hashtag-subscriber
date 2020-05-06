@@ -39,8 +39,18 @@ class ChannelServiceImpl : ChannelService {
         return channelRepo?.findAll().orEmpty()
     }
 
-    override fun saveOrUpdate(channel: Channel) {
-        channelRepo?.save(channel)
+    override fun saveOrUpdate(channel: Channel): Channel? {
+        val ch = getChannelByLink(channel.link?:"")
+        return if (ch==null)
+            channelRepo?.save(channel)
+        else {
+            ch.banned = channel.banned
+            ch.warnings = channel.warnings
+            ch.chatId = channel.chatId
+            ch.messages.addAll(channel.messages)
+            ch.exclusions.addAll(channel.exclusions)
+            channelRepo?.save(ch)
+        }
     }
 
     override fun removeChannel(channel: Channel) {

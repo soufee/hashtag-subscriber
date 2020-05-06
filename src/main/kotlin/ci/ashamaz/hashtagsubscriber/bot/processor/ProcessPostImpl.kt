@@ -22,7 +22,7 @@ import org.telegram.telegrambots.meta.api.objects.User
 import ci.ashamaz.hashtagsubscriber.model.ContactUser
 import ci.ashamaz.hashtagsubscriber.service.ContactUserService
 import ci.ashamaz.hashtagsubscriber.service.HashTagService
-import ci.ashamaz.hashtagsubscriber.util.ChannelPaser
+import ci.ashamaz.hashtagsubscriber.util.ChannelParser
 import ci.ashamaz.hashtagsubscriber.util.extention.setLinks
 import ci.ashamaz.hashtagsubscriber.util.tag.TagUtil
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
@@ -58,7 +58,7 @@ class ProcessPostImpl : ProcessPost {
     val commandExecutor: CommandExecutor? = null
 
     @Autowired
-    val channelParser: ChannelPaser?=null
+    val channelParser: ChannelParser? = null
 
     override fun processChannelPost(update: Update) {
         val post = update.channelPost
@@ -106,7 +106,7 @@ class ProcessPostImpl : ProcessPost {
             val text = mes.text ?: "" + mes.caption
             mes.tags = tagUtil?.getTagsFromText(text) ?: mutableSetOf()
             if (mes.tags.isNotEmpty())
-            return messageService?.save(mes)
+                return messageService?.save(mes)
         }
         return null
     }
@@ -127,6 +127,8 @@ class ProcessPostImpl : ProcessPost {
                 if (c == null) {
                     contact.registrationDate = LocalDateTime.now()
                     userService?.saveOrUpdateContactUser(contact)
+                } else {
+                    contact = c
                 }
             }
         } else {
@@ -157,8 +159,15 @@ class ProcessPostImpl : ProcessPost {
                 commandExecutor?.executeCommand(Command.ADMIN, chatId, message.messageId, text)
             }
             else -> {
-                channelParser?.parse()
-                // CommandFactory.sendHelpInfo("Команда не распознана", message.messageId, chatId)
+                if (contact.admin==true) {
+                    channelParser?.parse(channelParser?.getDocument())
+                    commandExecutor?.executeCommand(Command.DEFAULT, chatId, message.messageId, "Парсинг осуществлен")
+
+                }
+                else {
+                    commandExecutor?.executeCommand(Command.DEFAULT, chatId, message.messageId, "Команда не распознана")
+
+                }
             }
         }
     }

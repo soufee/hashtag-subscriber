@@ -7,5 +7,6 @@ enum class Command {
     EXCLUDE,
     INCLUDE,
     HELP,
-    ADMIN
+    ADMIN,
+    DEFAULT
 }
