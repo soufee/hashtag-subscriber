@@ -1,7 +1,7 @@
 package ci.ashamaz.hashtagsubscriber.bot
 
 import ci.ashamaz.hashtagsubscriber.bot.processor.ProcessPostImpl
-import ci.ashamaz.hashtagsubscriber.bot.processor.daemons.MessageSender
+import ci.ashamaz.hashtagsubscriber.bot.processor.daemons.MessageSenderDaemon
 import ci.ashamaz.hashtagsubscriber.bot.processor.intrfc.ProcessPost
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -54,7 +54,7 @@ class SubscriberBot : TelegramLongPollingBot() {
         }
         val collection = processor?.getMessageList()
         if (collection != null) {
-            MessageSender(this, collection).start()
+            MessageSenderDaemon(this, collection).start()
         } else {
             logger.error("Не удалось запустить поток обработки исходящих сообщений")
         }
