@@ -11,7 +11,7 @@ data class Channel(
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         val channel_id: Long = 0L,
         @Column(name = "chat_id", nullable = true)
-        val chatId: Long? = null,
+        var chatId: Long? = null,
         @Column(name = "channel_name")
         val channelName: String = "",
         @Column(name = "registration_date", nullable = true)
@@ -28,10 +28,10 @@ data class Channel(
         var weblink: String? = ""
 ) {
     @OneToMany(mappedBy = "channel", fetch = FetchType.EAGER)
-    val messages: Set<Message> = mutableSetOf()
+    val messages: MutableSet<Message> = mutableSetOf()
 
     @ManyToMany(mappedBy = "excludedChannels", fetch = FetchType.EAGER)
-    val exclusions: Set<ContactUser> = mutableSetOf()
+    val exclusions: MutableSet<ContactUser> = mutableSetOf()
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

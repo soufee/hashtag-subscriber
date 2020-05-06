@@ -3,18 +3,14 @@ package ci.ashamaz.hashtagsubscriber.service.impl
 import ci.ashamaz.hashtagsubscriber.HashtagSubscriberApplication
 import ci.ashamaz.hashtagsubscriber.model.Message
 import ci.ashamaz.hashtagsubscriber.service.MessageService
-import org.junit.Test
-import com.github.springtestdbunit.DbUnitTestExecutionListener;
-import com.github.springtestdbunit.annotation.DatabaseSetup;
 import org.junit.Assert.*
 import org.junit.Before
-import org.junit.jupiter.api.Assertions
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.TestExecutionListeners
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests
 import org.springframework.test.context.junit4.SpringRunner
 import java.time.LocalDate
@@ -25,8 +21,6 @@ import java.time.LocalDateTime
 @ContextConfiguration
 @RunWith(SpringRunner::class)
 @SpringBootTest(classes = [HashtagSubscriberApplication::class])
-//@TestExecutionListeners(DbUnitTestExecutionListener::class)
-//@DatabaseSetup("/data/MessageerviceImplTest-channel.xml")
 class MessageServiceImplTest : AbstractTransactionalJUnit4SpringContextTests() {
 
     @Autowired

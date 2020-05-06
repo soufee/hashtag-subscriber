@@ -3,11 +3,9 @@ package ci.ashamaz.hashtagsubscriber.util
 import ci.ashamaz.hashtagsubscriber.HashtagSubscriberApplication
 import ci.ashamaz.hashtagsubscriber.util.converter.MessageConverter
 import com.google.gson.Gson
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.Assert.*
 import org.junit.Test
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.runner.RunWith
-import org.mockito.junit.MockitoJUnitRunner
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -45,7 +43,7 @@ class MessageConverterTest {
         println(result)
         assertEquals(result?.date?.dayOfYear, 101)
         assertEquals(result?.title, "hashtags")
-        assertEquals(result?.messageId, 26)
+        assertEquals(result?.messageId, 26L)
     }
 
 }

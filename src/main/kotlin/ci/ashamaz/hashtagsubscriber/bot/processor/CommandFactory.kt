@@ -67,6 +67,13 @@ class CommandFactory : CommandExecutor {
         commands[Command.ADMIN] = { c, t, m ->
             run { openAdminTools(c, t, m) }
         }
+        commands[Command.DEFAULT] = { c, t, m ->
+            run { defaultAction(c, t, m) }
+        }
+    }
+
+    private fun defaultAction(chatId: Long, text: String, m: Int?) {
+        sendHelpInfo(text, m, chatId)
     }
 
     override fun executeCommand(command: Command, chatId: Long, messageId: Int?, text: String) {
@@ -300,7 +307,7 @@ class CommandFactory : CommandExecutor {
             sendMessage.replyToMessageId = messageId
             sendMessage.text = text
             if (bot!=null) bot?.execute(sendMessage)
-            messageQueue.add(sendMessage)
+          //  messageQueue.add(sendMessage)
         }
 
     }
